@@ -47,7 +47,8 @@ public class InMemoryDemo {
         		
         		
         // Insert Default Data using File InsertDefaultData.txt
-        String InsertDefaultData = new Scanner(new File("/Users/Sandeep/Documents/eclipse-workspace/inMemoryApp/InsertDefaultData.txt")).useDelimiter("\\A").next();
+        @SuppressWarnings("resource")
+		String InsertDefaultData = new Scanner(new File("/Users/Sandeep/Documents/eclipse-workspace/inMemoryApp/InsertDefaultData.txt")).useDelimiter("\\A").next();
         		       
         			
         PreparedStatement createTable = connection.prepareStatement(CreateDB);		
