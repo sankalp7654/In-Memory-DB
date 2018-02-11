@@ -60,7 +60,7 @@ public class InMemoryDemo {
         long endCreateTime = System.nanoTime();
         
         //time elapsed
-        createTime = startCreateTime - endCreateTime;
+        createTime = endCreateTime - startCreateTime;
       
         System.out.println("Elapsed time in milliseconds: " + createTime/1000000);
        
