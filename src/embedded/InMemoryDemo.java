@@ -1,10 +1,11 @@
 package embedded;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.io.*;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -20,71 +21,76 @@ public class InMemoryDemo {
     public static long createTime;
     
 
-    
+  /*  
     public static void main(String[] args) throws Exception {
         try {
-     //       insertWithStatement();
+        	createDatabase();
+   //       insertWithStatement();
             insertIntoIMDB();
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+    */
+    
 
+   
+
+   public static void createDatabase () throws ClassNotFoundException, SQLException, FileNotFoundException {
+  		Class.forName("org.h2.Driver");	
+	    Connection connection =  DriverManager.getConnection(url, username, password);
+	    
+  
+    //start 
+    long startCreateTime = System.nanoTime();
+
+    String CreateDB = "CREATE TABLE user_details (user_id int(11) NOT NULL AUTO_INCREMENT, user_name varchar(255) DEFAULT NULL, first_name varchar(50) DEFAULT NULL, last_name varchar(50) DEFAULT NULL, gender varchar(10) DEFAULT NULL, password varchar(50) DEFAULT NULL, status tinyint(10) DEFAULT NULL, PRIMARY KEY (user_id) ) AUTO_INCREMENT=10001";        		
+    		
+    		
+    // Insert Default Data using File InsertDefaultData.txt
+    @SuppressWarnings("resource")
+	String InsertDefaultData = new Scanner(new File("/Users/Sandeep/Documents/eclipse-workspace/inMemoryApp/InsertDefaultData.txt")).useDelimiter("\\A").next();
+    		       
+    			
+    PreparedStatement createTable = connection.prepareStatement(CreateDB);		
+    createTable.executeUpdate();
+    PreparedStatement insertDataToDB = connection.prepareStatement(InsertDefaultData);
+            
+    System.out.println(insertDataToDB.executeUpdate());
+    
+    long endCreateTime = System.nanoTime();
+    
+    //time elapsed
+    createTime = endCreateTime - startCreateTime;
+  
+    System.out.println("Elapsed time in milliseconds: " + createTime/1000000);
+   connection.close();
+    }
+    
     public static void insertIntoIMDB() throws SQLException, FileNotFoundException, ClassNotFoundException {
-      
-    		Class.forName("org.h2.Driver");	
-    	    Connection connection =  DriverManager.getConnection(url, username, password);
-    	    
-        PreparedStatement createPreparedStatement = null; 
-        PreparedStatement insertPreparedStatement = null; 
-        PreparedStatement selectPreparedStatement = null;
-
-        //start 
-        long startCreateTime = System.nanoTime();
-
-        String CreateDB = "CREATE TABLE user_details (   user_id int(11) NOT NULL AUTO_INCREMENT,   username varchar(255) DEFAULT NULL,   first_name varchar(50) DEFAULT NULL,   last_name varchar(50) DEFAULT NULL,   gender varchar(10) DEFAULT NULL,   password varchar(50) DEFAULT NULL,   status tinyint(10) DEFAULT NULL,   PRIMARY KEY (user_id) ) AUTO_INCREMENT=10001";        		
-        		
-        		
-        // Insert Default Data using File InsertDefaultData.txt
-        @SuppressWarnings("resource")
-		String InsertDefaultData = new Scanner(new File("/Users/Sandeep/Documents/eclipse-workspace/inMemoryApp/InsertDefaultData.txt")).useDelimiter("\\A").next();
-        		       
-        			
-        PreparedStatement createTable = connection.prepareStatement(CreateDB);		
-        createTable.executeUpdate();
-        PreparedStatement insertDataToDB = connection.prepareStatement(InsertDefaultData);
-                
-        System.out.println( insertDataToDB.executeUpdate());
-        
-        long endCreateTime = System.nanoTime();
-        
-        //time elapsed
-        createTime = endCreateTime - startCreateTime;
-      
-        System.out.println("Elapsed time in milliseconds: " + createTime/1000000);
-       
-        
-        
-        String InsertQuery = "INSERT INTO STUDENT" + "(id, name, phone, email) values" + "(?,?,?,?)";
+  
+        String InsertQuery = "INSERT INTO user_details" + "(user_id, user_name, first_name, last_name, gender, password, status) values" + "(?,?,?,?,?,?,?)";
         String SelectQuery = "select * from STUDENT";
         
           
         try {
-            connection.setAutoCommit(false);
             
-            // Runs for the first Time when user clicks "Insert into IMDB"
-             if(GUI.createDb == 1) {
-            	    createPreparedStatement = connection.prepareStatement(CreateDB);
-                createPreparedStatement.executeUpdate();
-                createPreparedStatement.close();
-            }
-    
+        	Class.forName("org.h2.Driver");	
+    	    Connection connection =  DriverManager.getConnection(url, username, password);
+    	    connection.setAutoCommit(false);
+            
+            PreparedStatement insertPreparedStatement = null; 
+            PreparedStatement selectPreparedStatement = null;
+
             insertPreparedStatement = connection.prepareStatement(InsertQuery);
-            insertPreparedStatement.setInt(1, GUI.id);
-            insertPreparedStatement.setString(2, GUI.name);
-            insertPreparedStatement.setInt(3, GUI.phone);
-            insertPreparedStatement.setString(4, GUI.email);
+            insertPreparedStatement.setInt(1, GUI.user_id);
+            insertPreparedStatement.setString(2, GUI.user_name);
+            insertPreparedStatement.setString(3, GUI.first_name);
+            insertPreparedStatement.setString(4, GUI.last_name);
+            insertPreparedStatement.setString(5, GUI.gender);
+            insertPreparedStatement.setString(6, GUI.password);
+            insertPreparedStatement.setInt(7, GUI.status);
             insertPreparedStatement.executeUpdate();
             insertPreparedStatement.close();
             
@@ -98,6 +104,7 @@ public class InMemoryDemo {
             }
             
             
+            connection.close();
             selectPreparedStatement.close();
 
             connection.commit();
@@ -109,12 +116,11 @@ public class InMemoryDemo {
       
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            connection.close();
-        }
+        } 
+        
     }
 
-    /*
+   /* 
      public static void search() throws SQLException {
 
     	     Connection connection = getDBConnection();
@@ -142,6 +148,6 @@ public class InMemoryDemo {
          connection.close();
 
     }
-  */ 
- 
+   
+*/
 }

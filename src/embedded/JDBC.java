@@ -30,12 +30,7 @@ public class JDBC
         long lStartTime = System.nanoTime();
 
         insertPreparedStatement = connection.prepareStatement(InsertQuery);
-        System.out.println(GUI.id + GUI.phone  );
-        insertPreparedStatement.setInt(1, GUI.id);
-        insertPreparedStatement.setString(2, GUI.name);
-        insertPreparedStatement.setInt(3, GUI.phone);
-        insertPreparedStatement.setString(4, GUI.email);
-        insertPreparedStatement.executeUpdate();
+       insertPreparedStatement.executeUpdate();
         insertPreparedStatement.close();
         
         //end
