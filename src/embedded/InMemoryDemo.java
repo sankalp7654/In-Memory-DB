@@ -18,96 +18,101 @@ public class InMemoryDemo {
     private static String url = "jdbc:h2:mem:student;DB_CLOSE_DELAY=-1";
     private static String username = "";
     private static String password = "";
-    public static long createTime;
+    public static long createTime, searchTime;
     
 
-  /*  
+   
     public static void main(String[] args) throws Exception {
         try {
-        	createDatabase();
-   //       insertWithStatement();
-            insertIntoIMDB();
+      		
+        		Class.forName("org.h2.Driver");	
+
+        		Connection connection =  DriverManager.getConnection(url, username, password);
+
+        		createDatabase(connection);
+   
+            insertIntoIMDB(connection);
+            
+            search(connection, 1);
+            
+            connection.close();
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-    */
+   
     
 
-   
-
-   public static void createDatabase () throws ClassNotFoundException, SQLException, FileNotFoundException {
-  		Class.forName("org.h2.Driver");	
-	    Connection connection =  DriverManager.getConnection(url, username, password);
+   public static void createDatabase (Connection connection) throws ClassNotFoundException, SQLException, FileNotFoundException {
 	    
-  
-    //start 
-    long startCreateTime = System.nanoTime();
+	    //start 
+	    long startCreateTime = System.nanoTime();
 
-    String CreateDB = "CREATE TABLE user_details (user_id int(11) NOT NULL AUTO_INCREMENT, user_name varchar(255) DEFAULT NULL, first_name varchar(50) DEFAULT NULL, last_name varchar(50) DEFAULT NULL, gender varchar(10) DEFAULT NULL, password varchar(50) DEFAULT NULL, status tinyint(10) DEFAULT NULL, PRIMARY KEY (user_id) ) AUTO_INCREMENT=10001";        		
+	    String CreateDB = "CREATE TABLE user_details (user_id int(11) NOT NULL AUTO_INCREMENT, user_name varchar(255) DEFAULT NULL, first_name varchar(50) DEFAULT NULL, last_name varchar(50) DEFAULT NULL, gender varchar(10) DEFAULT NULL, password varchar(50) DEFAULT NULL, status tinyint(10) DEFAULT NULL, PRIMARY KEY (user_id) ) AUTO_INCREMENT=10001";        		
     		
     		
-    // Insert Default Data using File InsertDefaultData.txt
-    @SuppressWarnings("resource")
-	String InsertDefaultData = new Scanner(new File("/Users/Sandeep/Documents/eclipse-workspace/inMemoryApp/InsertDefaultData.txt")).useDelimiter("\\A").next();
+	    // Insert Default Data using File InsertDefaultData.txt
+	    @SuppressWarnings("resource")
+	    String InsertDefaultData = new Scanner(new File("/Users/Sandeep/Documents/eclipse-workspace/inMemoryApp/InsertDefaultData.txt")).useDelimiter("\\A").next();
     		       
     			
-    PreparedStatement createTable = connection.prepareStatement(CreateDB);		
-    createTable.executeUpdate();
-    PreparedStatement insertDataToDB = connection.prepareStatement(InsertDefaultData);
+	    PreparedStatement createTable = connection.prepareStatement(CreateDB);		
+	    createTable.executeUpdate();
+	    PreparedStatement insertDataToDB = connection.prepareStatement(InsertDefaultData);
             
-    System.out.println(insertDataToDB.executeUpdate());
+	    System.out.println(insertDataToDB.executeUpdate());
     
-    long endCreateTime = System.nanoTime();
+	    long endCreateTime = System.nanoTime();
     
-    //time elapsed
-    createTime = endCreateTime - startCreateTime;
+	    //time elapsed
+	    createTime = endCreateTime - startCreateTime;
   
-    System.out.println("Elapsed time in milliseconds: " + createTime/1000000);
-   connection.close();
+	    System.out.println("Elapsed time in milliseconds: " + createTime/1000000);
+	    connection.commit();
+	  
     }
     
-    public static void insertIntoIMDB() throws SQLException, FileNotFoundException, ClassNotFoundException {
+    public static void insertIntoIMDB(Connection connection) throws SQLException, FileNotFoundException, ClassNotFoundException {
   
-        String InsertQuery = "INSERT INTO user_details" + "(user_id, user_name, first_name, last_name, gender, password, status) values" + "(?,?,?,?,?,?,?)";
-        String SelectQuery = "select * from STUDENT";
-        
+        String InsertQuery = "INSERT INTO user_details (user_id, user_name, first_name, last_name, gender, password, status) values (?,?,?,?,?,?,?)";
+        String SelectQuery = "select top 1000 * from user_details ";
+
           
         try {
-            
-        	Class.forName("org.h2.Driver");	
-    	    Connection connection =  DriverManager.getConnection(url, username, password);
-    	    connection.setAutoCommit(false);
-            
+ 
+            connection.setAutoCommit(false);
+  
             PreparedStatement insertPreparedStatement = null; 
             PreparedStatement selectPreparedStatement = null;
 
             insertPreparedStatement = connection.prepareStatement(InsertQuery);
-            insertPreparedStatement.setInt(1, GUI.user_id);
-            insertPreparedStatement.setString(2, GUI.user_name);
-            insertPreparedStatement.setString(3, GUI.first_name);
-            insertPreparedStatement.setString(4, GUI.last_name);
-            insertPreparedStatement.setString(5, GUI.gender);
-            insertPreparedStatement.setString(6, GUI.password);
-            insertPreparedStatement.setInt(7, GUI.status);
+            insertPreparedStatement.setInt(1, 122227);
+            insertPreparedStatement.setString(2, "SAnkalp SAxena");
+            insertPreparedStatement.setString(3, "Sankalp");
+            insertPreparedStatement.setString(4, "Saxena");
+            insertPreparedStatement.setString(5, "Male");
+            insertPreparedStatement.setString(6, "acoustic");
+            insertPreparedStatement.setInt(7, 2);
             insertPreparedStatement.executeUpdate();
+            System.out.println("Inserted");
             insertPreparedStatement.close();
+            
             
        
             selectPreparedStatement = connection.prepareStatement(SelectQuery);
             ResultSet rs = selectPreparedStatement.executeQuery();
             System.out.println("H2 In-Memory Database inserted through PreparedStatement");
-            System.out.println("Id	" +  "Name	" + "Phone	" + "Email	");
+            System.out.println("UserId	" +  "UserName	" + "FirstName	" + "LastName	" + "Gender   " + "Password   " + "Status   "); 
             while (rs.next()) {
-            System.out.println(rs.getInt("id") + "  "+ rs.getString("name") + "  "+ rs.getInt("phone") + "  " + rs.getString("email"));
+            System.out.println(rs.getInt(1) + "  "+ rs.getString(2) + "  "+ rs.getString(3) + "  " + rs.getString(4) + " " + rs.getString(5) + " " + rs.getString(6) + " " + rs.getInt(7));
             }
             
             
-            connection.close();
+          
+            connection.commit();
             selectPreparedStatement.close();
 
-            connection.commit();
         } catch (SQLException e) {
         	
         	 JOptionPane.showMessageDialog(null, "Unique Index Key or Primary Key Violation");;
@@ -120,34 +125,37 @@ public class InMemoryDemo {
         
     }
 
-   /* 
-     public static void search() throws SQLException {
+   
+     public static void search(Connection connection, int user_id) throws SQLException {
 
-    	     Connection connection = getDBConnection();
+    	  	//start 
+ 	    long startCreateTime = System.nanoTime();
+
          PreparedStatement searchPreparedStatement = null;
-         String SearchQuery = "select * from STUDENT where id = ? ";
+         String SearchQuery = "select * from user_details where user_id = ? ";
      	 searchPreparedStatement = connection.prepareStatement(SearchQuery);
-     	 searchPreparedStatement.setInt(1, GUI.search);
+     	 searchPreparedStatement.setInt(1, user_id);
      	 
          ResultSet rs = searchPreparedStatement.executeQuery();
-         Boolean found = false;
-         while (rs.next()) {
-        	 	if(rs.getInt("id") == GUI.search) {
-        	 		
-        	 		System.out.println(rs.getInt("id") + "  "+ rs.getString("name") + "  "+ rs.getInt("phone") + "  " + rs.getString("email"));
-        	 		found = true;
-        	 	}	
-
-           }
+		 rs.next();
+		 
+         try {
+				 if(rs.getInt("user_id") == user_id) {
+			           System.out.println(rs.getInt(1) + "  "+ rs.getString(2) + "  "+ rs.getString(3) + "  " + rs.getString(4) + " " + rs.getString(5) + " " + rs.getString(6) + " " + rs.getInt(7));
+			 	}
+		} catch (Exception e) {
+			System.out.println("No data found");
+			//			e.printStackTrace();
+		}
+        
+         long endCreateTime = System.nanoTime();
          
-         if(found == false) {
-        		JOptionPane.showMessageDialog(null, "Data Not Found !");
-           	 
-         }
-         searchPreparedStatement.close();
-         connection.close();
-
+ 	    //time elapsed
+ 	     searchTime = endCreateTime - startCreateTime;
+   
+ 	    System.out.println("Elapsed time in milliseconds: " + searchTime/1000000);
+ 	   
+        searchPreparedStatement.close();
     }
    
-*/
 }
